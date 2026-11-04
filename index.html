@@ -1,1435 +1,751 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ROBOSHIELD PRO | Subscription Monitor</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-:root {
-    --bg:#0b0d10;
-    --panel:#14181e;
-    --panel2:#1a2028;
-    --line:#2a323d;
-    --gold:#d6ad52;
-    --gold2:#f0ce7b;
-    --text:#f2f2f2;
-    --muted:#929ba8;
-    --green:#35c98a;
-    --red:#f16c6c;
-    --orange:#e9a64c;
+:root{
+ --bg:#081426;--panel:#10213a;--panel2:#142945;--line:#294361;
+ --blue:#2684ff;--blue2:#75b2ff;--text:#edf4ff;--muted:#9aacc2;
+ --green:#39c98a;--orange:#f2b84b;--red:#ef7070;
 }
-
-* { box-sizing:border-box; }
-
-body {
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:Arial,Helvetica,sans-serif;
-}
-
-button,input,select,textarea {
-    font:inherit;
-}
-
-button {
-    cursor:pointer;
-}
-
-.hidden { display:none !important; }
-
-.topbar {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:18px 25px;
-    background:#101318;
-    border-bottom:1px solid var(--line);
-    gap:15px;
-}
-
-.brand {
-    color:var(--gold);
-    font-size:21px;
-    font-weight:800;
-    letter-spacing:1px;
-}
-
-.brand small {
-    display:block;
-    color:var(--muted);
-    font-size:10px;
-    letter-spacing:3px;
-    margin-top:4px;
-}
-
-.top-actions {
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.container {
-    max-width:1450px;
-    margin:auto;
-    padding:25px;
-}
-
-.btn {
-    border:1px solid var(--line);
-    background:var(--panel2);
-    color:var(--text);
-    padding:10px 14px;
-    border-radius:7px;
-    font-weight:600;
-}
-
-.btn:hover { border-color:var(--gold); }
-
-.btn-gold {
-    background:var(--gold);
-    color:#111;
-    border-color:var(--gold);
-}
-
-.btn-danger {
-    background:#4a2020;
-    color:#ffaaaa;
-    border-color:#713333;
-}
-
-.btn-small {
-    padding:7px 10px;
-    font-size:12px;
-}
-
-.page-title {
-    margin:0 0 6px;
-    font-size:25px;
-}
-
-.subtitle {
-    color:var(--muted);
-    margin-bottom:24px;
-    font-size:13px;
-}
-
-.stats {
-    display:grid;
-    grid-template-columns:repeat(5,minmax(0,1fr));
-    gap:15px;
-    margin-bottom:24px;
-}
-
-.stat {
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:18px;
-}
-
-.stat-label {
-    color:var(--muted);
-    font-size:12px;
-    margin-bottom:12px;
-}
-
-.stat-value {
-    font-size:25px;
-    font-weight:800;
-    color:var(--gold);
-}
-
-.panel {
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:20px;
-    margin-bottom:20px;
-}
-
-.panel-heading {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-bottom:17px;
-}
-
-.panel-heading h2 {
-    font-size:17px;
-    margin:0;
-}
-
-.toolbar {
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:15px;
-}
-
-input,select,textarea {
-    width:100%;
-    background:#0d1117;
-    color:var(--text);
-    border:1px solid var(--line);
-    padding:11px;
-    border-radius:6px;
-    outline:none;
-}
-
-input:focus,select:focus,textarea:focus {
-    border-color:var(--gold);
-}
-
-.toolbar input {
-    flex:1;
-    min-width:180px;
-}
-
-.toolbar select {
-    width:auto;
-    min-width:145px;
-}
-
-.table-wrap {
-    width:100%;
-    overflow-x:auto;
-}
-
-table {
-    width:100%;
-    border-collapse:collapse;
-    min-width:900px;
-}
-
-th,td {
-    padding:13px 11px;
-    text-align:left;
-    border-bottom:1px solid var(--line);
-    font-size:13px;
-}
-
-th {
-    color:var(--gold);
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:.7px;
-}
-
-td { color:#dce0e5; }
-
-.muted { color:var(--muted); }
-
-.badge {
-    display:inline-block;
-    padding:5px 9px;
-    border-radius:20px;
-    font-size:11px;
-    font-weight:700;
-}
-
-.active {
-    color:var(--green);
-    background:#123d2e;
-}
-
-.expiring {
-    color:var(--orange);
-    background:#463216;
-}
-
-.expired {
-    color:#ff8585;
-    background:#451f1f;
-}
-
-.free {
-    color:#8ebaff;
-    background:#1b304a;
-}
-
-.actions {
-    display:flex;
-    gap:5px;
-    flex-wrap:wrap;
-}
-
-.empty {
-    text-align:center;
-    color:var(--muted);
-    padding:35px;
-}
-
-.reminder-item {
-    padding:13px;
-    border-bottom:1px solid var(--line);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    flex-wrap:wrap;
-}
-
-.reminder-item:last-child { border-bottom:0; }
-
-.modal {
-    position:fixed;
-    inset:0;
-    background:#000b;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:15px;
-    z-index:100;
-    overflow-y:auto;
-}
-
-.modal-box {
-    width:100%;
-    max-width:650px;
-    background:var(--panel);
-    border:1px solid var(--gold);
-    border-radius:12px;
-    padding:22px;
-    max-height:92vh;
-    overflow-y:auto;
-}
-
-.modal-box h2 {
-    margin:0 0 18px;
-    color:var(--gold);
-}
-
-.form-grid {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:13px;
-}
-
-.field label {
-    display:block;
-    color:var(--muted);
-    font-size:12px;
-    margin-bottom:7px;
-}
-
-.field.full { grid-column:1/-1; }
-
-.modal-actions {
-    display:flex;
-    justify-content:flex-end;
-    gap:10px;
-    margin-top:20px;
-    flex-wrap:wrap;
-}
-
-.login-screen {
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-}
-
-.login-box {
-    width:100%;
-    max-width:400px;
-    background:var(--panel);
-    border:1px solid var(--gold);
-    border-radius:12px;
-    padding:30px;
-}
-
-.login-box h1 {
-    color:var(--gold);
-    text-align:center;
-    font-size:23px;
-}
-
-.login-box p {
-    text-align:center;
-    color:var(--muted);
-    font-size:13px;
-    margin-bottom:25px;
-}
-
-.login-box .field { margin-bottom:15px; }
-
-.login-box button { width:100%; }
-
-.error {
-    color:#ff8888;
-    font-size:13px;
-    margin-top:12px;
-}
-
-.success {
-    color:var(--green);
-    font-size:13px;
-    margin-top:12px;
-}
-
-.footer {
-    text-align:center;
-    color:var(--muted);
-    padding:25px;
-    font-size:11px;
-}
-
-@media(max-width:1000px) {
-    .stats { grid-template-columns:repeat(3,1fr); }
-}
-
-@media(max-width:650px) {
-    .container { padding:15px; }
-    .stats { grid-template-columns:repeat(2,1fr); }
-    .form-grid { grid-template-columns:1fr; }
-    .field.full { grid-column:auto; }
-    .topbar { padding:15px; }
-    .brand { font-size:17px; }
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#07111f,#0d1e34);color:var(--text);font:14px/1.5 Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0;border-radius:8px;padding:10px 14px;font-weight:700}
+.primary{background:var(--blue);color:white}
+.secondary{background:#203b5b;color:white;border:1px solid #355575}
+.danger{background:#48272e;color:#ffb7b7;border:1px solid #79434c}
+.small{padding:7px 10px;font-size:12px}
+.wrap{max-width:1400px;margin:auto;padding:24px 18px 50px}
+header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:48px;height:48px;border:2px solid var(--blue);border-radius:12px;display:grid;place-items:center;color:var(--blue2);font-size:21px;font-weight:900}
+.brand h1{font-size:19px;letter-spacing:1.5px;margin:0}
+.brand p{font-size:11px;letter-spacing:2px;color:var(--muted);margin:2px 0}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--muted);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat span{color:var(--muted);font-size:11px}
+.stat strong{display:block;font-size:27px;margin-top:6px}
+.blue{color:var(--blue2)}.green{color:var(--green)}.orange{color:var(--orange)}.red{color:var(--red)}
+.toolbar{display:flex;gap:9px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:18px 0}
+.filters{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+input,select,textarea{width:100%;background:#09182a;color:var(--text);border:1px solid #34506e;border-radius:8px;padding:10px 11px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+.filters input{max-width:300px}.filters select{max-width:190px}
+.tablebox{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tablehead{display:flex;justify-content:space-between;gap:10px;padding:15px 17px;border-bottom:1px solid var(--line);align-items:center}
+.tablehead h2{font-size:15px;margin:0}.muted{color:var(--muted);font-size:12px}
+.tablewrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:1050px}
+th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #223a55;white-space:nowrap}
+th{background:#142943;color:#a9bed6;font-size:10px;letter-spacing:.8px}
+td{font-size:12px}
+tbody tr:hover{background:#152b45}
+.customer{font-weight:700}.sub{font-size:10px;color:var(--muted);margin-top:3px}
+.pill{display:inline-block;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.active{background:#153c31;color:#75e4b0}.soon{background:#493719;color:#ffd58b}
+.expired{background:#48262d;color:#ffaaaa}.trial{background:#1c3558;color:#a9caff}
+.actions{display:flex;gap:5px}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.notice{margin-top:16px;padding:13px 15px;border:1px solid #34577b;background:#102944;border-radius:9px;color:#bdd8f5;font-size:12px}
+.modalback{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:15px;z-index:20}
+.modalback.show{display:flex}
+.modal{width:min(780px,100%);max-height:94vh;overflow:auto;background:#10213a;border:1px solid #3a5c7c;border-radius:14px}
+.modalhead{padding:16px 19px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modalhead h2{font-size:16px;margin:0}
+.close{background:none;color:var(--muted);font-size:23px;padding:0 5px}
+.formgrid{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.field label{display:block;color:#b7c9dc;font-size:11px;margin-bottom:5px}
+.field.full{grid-column:1/-1}
+.hint{font-size:10px;color:var(--muted);margin-top:4px}
+.modalfoot{padding:14px 18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+.loginbox{max-width:420px;margin:9vh auto;padding:26px;background:var(--panel);border:1px solid var(--line);border-radius:15px}
+.loginbox h2{margin:0 0 5px}.loginbox p{color:var(--muted);font-size:12px}
+.loginbox label{display:block;margin:14px 0 5px;font-size:12px}
+.loginbox button{width:100%;margin-top:16px}
+.hidden{display:none!important}
+.subsection{padding:16px 18px;border-bottom:1px solid var(--line)}
+.subsection h3{font-size:13px;margin:0 0 10px}
+.payment-list{display:grid;gap:8px;padding:15px 18px}
+.payment-item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:12px}
+.footer{text-align:center;color:#70849c;font-size:10px;margin-top:22px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){
+ .wrap{padding:15px 10px}.formgrid{grid-template-columns:1fr}
+ .field.full{grid-column:auto}.stats{gap:8px}
+ .stat{padding:12px}.stat strong{font-size:22px}
+ .tablehead{align-items:flex-start;flex-direction:column}
 }
 </style>
 </head>
-
 <body>
 
 <!-- LOGIN -->
-<div id="loginScreen" class="login-screen">
-    <div class="login-box">
-        <h1>ROBOSHIELD PRO</h1>
-        <p>SUBSCRIPTION MANAGEMENT SYSTEM</p>
-
-        <form id="loginForm">
-            <div class="field">
-                <label>Administrator Email</label>
-                <input id="loginEmail" type="email" required autocomplete="username">
-            </div>
-
-            <div class="field">
-                <label>Password</label>
-                <input id="loginPassword" type="password" required autocomplete="current-password">
-            </div>
-
-            <button class="btn btn-gold" id="loginButton" type="submit">
-                SIGN IN
-            </button>
-
-            <div id="loginMessage" class="error"></div>
-        </form>
-    </div>
+<div id="loginScreen" class="loginbox">
+ <div class="brand">
+  <div class="logo">RBS</div>
+  <div><h2>ROBOSHIELD PRO</h2><p>SUBSCRIPTION MONITOR</p></div>
+ </div>
+ <h3>Administrator Login</h3>
+ <p>Sign in using your authorized Supabase administrator account.</p>
+ <form id="loginForm">
+  <label>Email address</label>
+  <input id="loginEmail" type="email" required autocomplete="username">
+  <label>Password</label>
+  <input id="loginPassword" type="password" required autocomplete="current-password">
+  <button class="primary" type="submit" id="loginButton">SIGN IN</button>
+  <p id="loginMessage"></p>
+ </form>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="hidden">
+<!-- ADMIN APP -->
+<div id="app" class="wrap hidden">
+ <header>
+  <div class="brand">
+   <div class="logo">RBS</div>
+   <div><h1>ROBOSHIELD PRO</h1><p>SUBSCRIPTION MONITOR</p></div>
+  </div>
+  <div class="header-actions">
+   <span class="tag" id="adminEmail">ADMIN</span>
+   <button class="secondary" id="exportBtn">Export CSV</button>
+   <button class="secondary" id="paymentsBtn">Payment History</button>
+   <button class="secondary" id="remindersBtn">Reminders</button>
+   <button class="primary" id="addBtn">＋ Add Customer</button>
+   <button class="danger" id="logoutBtn">Log Out</button>
+  </div>
+ </header>
 
-<header class="topbar">
-    <div class="brand">
-        ROBOSHIELD PRO
-        <small>SUBSCRIPTION MONITOR</small>
-    </div>
+ <section class="stats">
+  <div class="stat"><span>TOTAL CUSTOMERS</span><strong class="blue" id="totalCount">0</strong></div>
+  <div class="stat"><span>ACTIVE SUBSCRIPTIONS</span><strong class="green" id="activeCount">0</strong></div>
+  <div class="stat"><span>EXPIRING WITHIN 7 DAYS</span><strong class="orange" id="soonCount">0</strong></div>
+  <div class="stat"><span>EXPIRED SUBSCRIPTIONS</span><strong class="red" id="expiredCount">0</strong></div>
+  <div class="stat"><span>TOTAL RECORDED REVENUE</span><strong class="blue" id="revenueTotal">$0.00</strong></div>
+ </section>
 
-    <div class="top-actions">
-        <span id="adminEmail" class="muted"></span>
-        <button class="btn btn-small" id="logoutButton">Logout</button>
-    </div>
-</header>
+ <div class="toolbar">
+  <div class="filters">
+   <input id="search" placeholder="Search name, email or MT5 account...">
+   <select id="statusFilter">
+    <option value="all">All statuses</option><option value="active">Active</option>
+    <option value="soon">Expiring soon</option><option value="expired">Expired</option>
+   </select>
+   <select id="serviceFilter">
+    <option value="all">All services</option>
+    <option value="Account Management">Account Management</option>
+    <option value="Expert Advisor">Expert Advisor</option>
+   </select>
+  </div>
+  <span class="muted" id="recordCount">0 records</span>
+ </div>
 
-<main class="container">
+ <section class="tablebox">
+  <div class="tablehead"><h2>Customer Subscriptions</h2><span class="muted">Live Supabase records</span></div>
+  <div class="tablewrap">
+   <table>
+    <thead><tr>
+     <th>Customer</th><th>MT5 Account</th><th>Service</th><th>Tier / Plan</th>
+     <th>Start Date</th><th>Expiration</th><th>Time Left</th><th>Status</th><th>Actions</th>
+    </tr></thead>
+    <tbody id="customerRows"></tbody>
+   </table>
+  </div>
+  <div class="empty hidden" id="emptyState">No customer records found.</div>
+ </section>
 
-    <h1 class="page-title">Dashboard Overview</h1>
-    <div class="subtitle">Manage your customers, subscriptions and payments.</div>
-
-    <section class="stats">
-        <div class="stat">
-            <div class="stat-label">TOTAL CUSTOMERS</div>
-            <div class="stat-value" id="totalCustomers">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="stat-label">ACTIVE SUBSCRIPTIONS</div>
-            <div class="stat-value" id="activeCustomers">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="stat-label">EXPIRING IN 7 DAYS</div>
-            <div class="stat-value" id="expiringCustomers">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="stat-label">EXPIRED SUBSCRIPTIONS</div>
-            <div class="stat-value" id="expiredCustomers">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="stat-label">TOTAL PAYMENTS (USD)</div>
-            <div class="stat-value" id="totalRevenue">$0.00</div>
-        </div>
-    </section>
-
-    <!-- CUSTOMER MANAGEMENT -->
-    <section class="panel">
-        <div class="panel-heading">
-            <h2>Customer Management</h2>
-            <div class="actions">
-                <button class="btn btn-small" id="exportButton">Export CSV</button>
-                <button class="btn btn-gold" id="addCustomerButton">+ Add Customer</button>
-            </div>
-        </div>
-
-        <div class="toolbar">
-            <input id="searchInput" placeholder="Search name, email or MT5 account...">
-
-            <select id="statusFilter">
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="expiring">Expiring Soon</option>
-                <option value="expired">Expired</option>
-            </select>
-
-            <select id="serviceFilter">
-                <option value="all">All Services</option>
-                <option value="Expert Advisor">Expert Advisor</option>
-                <option value="Account Management">Account Management</option>
-            </select>
-        </div>
-
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Plan</th>
-                        <th>MT5 Account</th>
-                        <th>Start Date</th>
-                        <th>Expiration</th>
-                        <th>Status</th>
-                        <th>Payments</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="customerTable">
-                    <tr><td colspan="9" class="empty">Loading customers...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <!-- REMINDERS -->
-    <section class="panel">
-        <div class="panel-heading">
-            <h2>Expiration Reminders</h2>
-            <span class="muted">Manual reminders only</span>
-        </div>
-        <div id="reminderList">
-            <div class="empty">No reminders.</div>
-        </div>
-    </section>
-
-    <div class="footer">
-        ROBOSHIELD PRO © 2026 | PRIVATE ADMIN DASHBOARD
-    </div>
-
-</main>
+ <div class="notice">
+  **IMPORTANT:** A 7-day free trial is recorded separately in the plan description. It does not automatically convert into a paid subscription. Confirm with the customer before activating a paid plan. All recorded payment amounts are actual payments entered by the administrator.
+ </div>
+ <div class="footer">ROBOSHIELD PRO • ADMINISTRATION SYSTEM</div>
 </div>
 
 <!-- CUSTOMER MODAL -->
-<div id="customerModal" class="modal hidden">
-    <div class="modal-box">
-        <h2 id="customerModalTitle">Add Customer</h2>
-
-        <form id="customerForm">
-            <input type="hidden" id="customerId">
-
-            <div class="form-grid">
-
-                <div class="field">
-                    <label>Customer Name *</label>
-                    <input id="customerName" required>
-                </div>
-
-                <div class="field">
-                    <label>Email Address</label>
-                    <input id="customerEmail" type="email">
-                </div>
-
-                <div class="field">
-                    <label>Phone Number</label>
-                    <input id="customerPhone">
-                </div>
-
-                <div class="field">
-                    <label>MT5 Account Number</label>
-                    <input id="customerMT5">
-                </div>
-
-                <div class="field">
-                    <label>Service *</label>
-                    <select id="customerService" required>
-                        <option value="Expert Advisor">Expert Advisor</option>
-                        <option value="Account Management">Account Management</option>
-                    </select>
-                </div>
-
-                <div class="field">
-                    <label>Subscription Plan *</label>
-                    <select id="customerPlan" required></select>
-                </div>
-
-                <div class="field">
-                    <label>Start Date *</label>
-                    <input id="customerStart" type="date" required>
-                </div>
-
-               <div class="field">
-    <label>Expiration Date *</label>
-    <input id="customerExpiry" type="date" required>
-</div>
-                <div class="field full" id="initialPaymentField">
-                    <label>Initial Payment Amount (USD)</label>
-                    <input id="initialPayment" type="number" min="0" step="0.01" value="0">
-                    <small class="muted">Enter 0 if this customer has not paid yet.</small>
-                </div>
-
-                <div class="field" id="paymentMethodField">
-                    <label>Payment Method</label>
-                    <select id="initialPaymentMethod">
-                        <option>GCash</option>
-                        <option>Bank Transfer</option>
-                        <option>Other</option>
-                    </select>
-                </div>
-
-                <div class="field" id="paymentReferenceField">
-                    <label>Payment Reference</label>
-                    <input id="initialPaymentReference">
-                </div>
-
-                <div class="field full">
-                    <label>Notes</label>
-                    <textarea id="customerNotes" rows="3"></textarea>
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" class="btn" data-close="customerModal">Cancel</button>
-                <button type="submit" class="btn btn-gold" id="saveCustomerButton">Save Customer</button>
-            </div>
-        </form>
+<div class="modalback" id="customerModal">
+ <div class="modal">
+  <div class="modalhead"><h2 id="customerModalTitle">Add Customer</h2><button class="close" data-close="customerModal">×</button></div>
+  <form id="customerForm">
+   <div class="formgrid">
+    <div class="field"><label>Customer Name *</label><input id="customerName" required></div>
+    <div class="field"><label>Email Address</label><input id="customerEmail" type="email"></div>
+    <div class="field"><label>Phone Number</label><input id="customerPhone"></div>
+    <div class="field"><label>MT5 Account Number</label><input id="mt5Account"></div>
+    <div class="field"><label>Service *</label>
+     <select id="service" required>
+      <option value="Account Management">Account Management</option>
+      <option value="Expert Advisor">Expert Advisor</option>
+     </select>
     </div>
-</div>
-
-<!-- PAYMENT MODAL -->
-<div id="paymentModal" class="modal hidden">
-    <div class="modal-box">
-        <h2>Record Payment</h2>
-        <p class="muted" id="paymentCustomerName"></p>
-
-        <form id="paymentForm">
-            <input type="hidden" id="paymentCustomerId">
-
-            <div class="form-grid">
-                <div class="field">
-                    <label>Amount (USD) *</label>
-                    <input id="paymentAmount" type="number" min="0.01" step="0.01" required>
-                </div>
-
-                <div class="field">
-                    <label>Payment Date *</label>
-                    <input id="paymentDate" type="date" required>
-                </div>
-
-                <div class="field">
-                    <label>Payment Method</label>
-                    <select id="paymentMethod">
-                        <option>GCash</option>
-                        <option>Bank Transfer</option>
-                        <option>Other</option>
-                    </select>
-                </div>
-
-                <div class="field">
-                    <label>Reference Number</label>
-                    <input id="paymentReference">
-                </div>
-
-                <div class="field full">
-                    <label>Notes</label>
-                    <textarea id="paymentNotes" rows="3"></textarea>
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" class="btn" data-close="paymentModal">Cancel</button>
-                <button type="submit" class="btn btn-gold">Save Payment</button>
-            </div>
-        </form>
+    <div class="field"><label>Subscription Type *</label>
+     <select id="subscriptionType">
+      <option value="trial">7-Day Free Trial</option>
+      <option value="paid">Paid Subscription</option>
+     </select>
     </div>
+    <div class="field hidden" id="tierField"><label>Account Management Tier *</label>
+     <select id="tier">
+      <option value="RBS Nano">RBS Nano — 2,000–10,000 USC</option>
+      <option value="RBS Core">RBS Core — 10,001–20,000 USC</option>
+      <option value="RBS Prime">RBS Prime — 20,001–50,000 USC</option>
+      <option value="RBS Elite">RBS Elite — 50,001–70,000 USC</option>
+      <option value="RBS Sovereign">RBS Sovereign — 70,001–100,000 USC</option>
+     </select>
+    </div>
+    <div class="field"><label>Subscription Period *</label><select id="plan"></select></div>
+    <div class="field"><label>Subscription Fee (USD)</label><input id="planPrice" type="number" min="0" step=".01" readonly></div>
+    <div class="field"><label>Amount Actually Received (USD)</label><input id="amountPaid" type="number" min="0" step=".01" value="0"></div>
+    <div class="field"><label>Payment Method</label>
+     <select id="paymentMethod"><option value="">Not recorded</option><option>Bank Transfer</option><option>GCash</option><option>PayPal</option><option>Crypto</option><option>Other</option></select>
+    </div>
+    <div class="field"><label>Payment Reference</label><input id="paymentReference"></div>
+    <div class="field"><label>Start Date *</label><input id="startDate" type="date" required></div>
+    <div class="field"><label>Expiration Date *</label><input id="expiryDate" type="date" required></div>
+    <div class="field full"><label>Admin Notes</label><textarea id="notes" rows="3"></textarea></div>
+   </div>
+   <div class="modalfoot"><button type="button" class="secondary" data-close="customerModal">Cancel</button><button type="submit" class="primary" id="saveCustomerBtn">Save Customer</button></div>
+  </form>
+ </div>
 </div>
 
 <!-- PAYMENT HISTORY MODAL -->
-<div id="historyModal" class="modal hidden">
-    <div class="modal-box">
-        <h2>Payment History</h2>
-        <p id="historyCustomerName" class="muted"></p>
+<div class="modalback" id="paymentsModal">
+ <div class="modal">
+  <div class="modalhead"><h2>Payment History</h2><button class="close" data-close="paymentsModal">×</button></div>
+  <div class="subsection">
+   <h3>Record a Payment</h3>
+   <form id="paymentForm" class="formgrid">
+    <div class="field full"><label>Customer *</label><select id="paymentCustomer" required></select></div>
+    <div class="field"><label>Amount USD *</label><input id="paymentAmount" type="number" min="0.01" step=".01" required></div>
+    <div class="field"><label>Payment Date *</label><input id="paymentDate" type="date" required></div>
+    <div class="field"><label>Payment Method</label><select id="paymentMethod"><option>Bank Transfer</option><option>GCash</option><option>PayPal</option><option>Crypto</option><option>Other</option></select></div>
+    <div class="field"><label>Reference</label><input id="paymentRef"></div>
+    <div class="field full"><label>Payment Notes</label><textarea id="paymentNotes" rows="2"></textarea></div>
+    <div class="field full"><button class="primary" type="submit">Save Payment</button></div>
+   </form>
+  </div>
+  <div class="payment-list" id="paymentList"></div>
+  <div class="modalfoot"><button class="secondary" data-close="paymentsModal">Close</button></div>
+ </div>
+</div>
 
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Amount</th>
-                        <th>Method</th>
-                        <th>Reference</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="paymentHistoryTable"></tbody>
-            </table>
-        </div>
-
-        <div class="modal-actions">
-            <button class="btn" data-close="historyModal">Close</button>
-        </div>
-    </div>
+<!-- REMINDERS MODAL -->
+<div class="modalback" id="remindersModal">
+ <div class="modal">
+  <div class="modalhead"><h2>Subscription Reminders</h2><button class="close" data-close="remindersModal">×</button></div>
+  <div class="payment-list" id="reminderList"></div>
+  <div class="modalfoot"><button class="secondary" data-close="remindersModal">Close</button></div>
+ </div>
 </div>
 
 <script>
-/* =========================================
+"use strict";
+
+/* =========================================================
    SUPABASE CONFIGURATION
-========================================= */
-
+   Enter the same project URL and publishable/anon key used
+   by your existing Supabase application.
+   ========================================================= */
 const SUPABASE_URL = "https://vkyhjbfgmoegsexdiuta.supabase.co";
-
 const SUPABASE_KEY = "sb_publishable_RCJp64PNKZuRxF4Tbo0_IQ_d4zA5oe1";
-
-const db = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-/* =========================================
-   APPLICATION DATA
-========================================= */
-
-let customers = [];
-let payments = [];
-
-const plans = {
-    "Expert Advisor": [
-        { name:"Free Trial", days:7, price:0 },
-        { name:"Monthly", days:30, price:30 },
-        { name:"3 Months", days:90, price:70 },
-        { name:"Annual", days:365, price:280 }
-    ],
-    "Account Management": [
-        { name:"Monthly", days:30, price:12 },
-        { name:"3 Months", days:90, price:30 },
-        { name:"7 Months", days:210, price:65 },
-        { name:"Annual", days:365, price:100 }
-    ]
-};
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = id => document.getElementById(id);
+let customers = [];
+let payments = [];
+let editingCustomerId = null;
 
-function todayString() {
-    const d = new Date();
-    return [
-        d.getFullYear(),
-        String(d.getMonth()+1).padStart(2,"0"),
-        String(d.getDate()).padStart(2,"0")
-    ].join("-");
+/* =========================================================
+   PLAN PRICING
+   All prices are USD.
+   ========================================================= */
+const MANAGEMENT_TIERS = {
+ "RBS Nano": {
+  balance:"2,000–10,000 USC",
+  prices:{"First 30 Days":6,"Monthly Renewal":12,"3 Months":30,"6 Months":60,"1 Year":120}
+ },
+ "RBS Core": {
+  balance:"10,001–20,000 USC",
+  prices:{"First 30 Days":10,"Monthly Renewal":20,"3 Months":50,"6 Months":100,"1 Year":200}
+ },
+ "RBS Prime": {
+  balance:"20,001–50,000 USC",
+  prices:{"First 30 Days":15,"Monthly Renewal":30,"3 Months":75,"6 Months":150,"1 Year":300}
+ },
+ "RBS Elite": {
+  balance:"50,001–70,000 USC",
+  prices:{"First 30 Days":20,"Monthly Renewal":40,"3 Months":100,"6 Months":200,"1 Year":400}
+ },
+ "RBS Sovereign": {
+  balance:"70,001–100,000 USC",
+  prices:{"First 30 Days":25,"Monthly Renewal":50,"3 Months":125,"6 Months":250,"1 Year":500}
+ }
+};
+
+const EA_PLANS = {
+ "Monthly":{days:30,price:30},
+ "3 Months":{days:90,price:70},
+ "Annual":{days:365,price:280}
+};
+const MANAGEMENT_DAYS = {
+ "First 30 Days":30,
+ "Monthly Renewal":30,
+ "3 Months":90,
+ "6 Months":180,
+ "1 Year":365
+};
+const TRIAL_DAYS = 7;
+
+function money(value){
+ return Number(value||0).toLocaleString("en-US",{style:"currency",currency:"USD"});
+}
+function escapeHTML(value){
+ return String(value??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+function localISO(date=new Date()){
+ const d=new Date(date.getTime()-date.getTimezoneOffset()*60000);
+ return d.toISOString().slice(0,10);
+}
+function parseDate(value){
+ if(!value)return null;
+ const [y,m,d]=String(value).slice(0,10).split("-").map(Number);
+ if(!y||!m||!d)return null;
+ return new Date(y,m-1,d);
+}
+function addDays(value,days){
+ const d=parseDate(value);
+ if(!d)return "";
+ d.setDate(d.getDate()+Number(days));
+ return localISO(d);
+}
+function dateText(value){
+ const d=parseDate(value);
+ return d?d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"}):"—";
+}
+function daysRemaining(value){
+ const d=parseDate(value);
+ if(!d)return null;
+ const today=parseDate(localISO());
+ return Math.round((d-today)/86400000);
+}
+function statusOf(c){
+ const days=daysRemaining(c.expiry_date);
+ if(days===null)return "unknown";
+ if(days<0)return "expired";
+ if(days<=7)return "soon";
+ return "active";
+}
+function getSelectedPlan(){
+ const service=$("service").value;
+ const type=$("subscriptionType").value;
+ const plan=$("plan").value;
+ if(type==="trial")return {name:"7-Day Free Trial",days:TRIAL_DAYS,price:0};
+ if(service==="Expert Advisor")return {name:plan,...EA_PLANS[plan]};
+ const tier=MANAGEMENT_TIERS[$("tier").value];
+ return {name:plan,days:MANAGEMENT_DAYS[plan],price:tier?.prices[plan]??0};
+}
+function updatePlanOptions(){
+ const service=$("service").value;
+ const trial=$("subscriptionType").value==="trial";
+ $("tierField").classList.toggle("hidden",service!=="Account Management");
+ $("plan").innerHTML="";
+ if(trial){
+  $("plan").innerHTML='<option value="7-Day Free Trial">7-Day Free Trial</option>';
+  $("planPrice").value="0";
+  return;
+ }
+ const options=service==="Expert Advisor"
+  ?Object.keys(EA_PLANS)
+  :Object.keys(MANAGEMENT_DAYS);
+ options.forEach(name=>{
+  const option=document.createElement("option");
+  option.value=name;option.textContent=name;
+  $("plan").appendChild(option);
+ });
+ updatePrice();
+}
+function updatePrice(){
+ const p=getSelectedPlan();
+ $("planPrice").value=p.price;
+}
+function updateExpiry(){
+ const p=getSelectedPlan();
+ $("expiryDate").value=addDays($("startDate").value,p.days);
+}
+function fullPlanName(service,type,tier,plan){
+ if(type==="trial")return service+" | "+(service==="Account Management"?tier+" | ":"")+"7-Day Free Trial";
+ return service+" | "+(service==="Account Management"?tier+" | ":"")+plan;
 }
 
-function addDays(dateString, days) {
-    const d = new Date(dateString + "T12:00:00");
-    d.setDate(d.getDate() + Number(days));
-
-    return [
-        d.getFullYear(),
-        String(d.getMonth()+1).padStart(2,"0"),
-        String(d.getDate()).padStart(2,"0")
-    ].join("-");
-}
-
-function formatDate(date) {
-    if (!date) return "-";
-    return new Date(date + "T12:00:00").toLocaleDateString();
-}
-
-function money(amount) {
-    return "$" + Number(amount || 0).toFixed(2);
-}
-
-function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#039;"
-    })[char]);
-}
-
-function getCustomerPayments(customerId) {
-    return payments.filter(p => p.customer_id === customerId);
-}
-
-function getCustomerTotal(customerId) {
-    return getCustomerPayments(customerId)
-        .reduce((sum,p) => sum + Number(p.amount),0);
-}
-
-function getStatus(customer) {
-    const today = todayString();
-    const remaining = Math.ceil(
-        (new Date(customer.expiry_date + "T12:00:00") -
-        new Date(today + "T12:00:00")) / 86400000
-    );
-
-    if (remaining < 0) {
-        return {name:"Expired",className:"expired"};
-    }
-
-    if (remaining <= 7) {
-        return {name:"Expiring Soon",className:"expiring"};
-    }
-
-    return {name:"Active",className:"active"};
-}
-
-/* =========================================
+/* =========================================================
    AUTHENTICATION
-========================================= */
-
-async function checkSession() {
-    const { data, error } = await db.auth.getSession();
-
-    if (error) {
-        console.error(error);
-    }
-
-    if (data.session) {
-        showDashboard(data.session.user);
-    } else {
-        showLogin();
-    }
+   ========================================================= */
+async function checkSession(){
+ const {data,error}=await db.auth.getSession();
+ if(error)throw error;
+ if(data.session){
+  await showApp(data.session.user);
+ }else{
+  $("loginScreen").classList.remove("hidden");
+  $("app").classList.add("hidden");
+ }
 }
-
-function showLogin() {
-    $("loginScreen").classList.remove("hidden");
-    $("dashboard").classList.add("hidden");
+async function showApp(user){
+ $("loginScreen").classList.add("hidden");
+ $("app").classList.remove("hidden");
+ $("adminEmail").textContent=user.email||"Administrator";
+ await loadAll();
 }
-
-async function showDashboard(user) {
-    $("loginScreen").classList.add("hidden");
-    $("dashboard").classList.remove("hidden");
-    $("adminEmail").textContent = user.email || "Administrator";
-
-    await loadData();
-}
-
-$("loginForm").addEventListener("submit", async event => {
-    event.preventDefault();
-
-    const button = $("loginButton");
-    const message = $("loginMessage");
-
-    button.disabled = true;
-    button.textContent = "SIGNING IN...";
-    message.textContent = "";
-
-    const { data, error } = await db.auth.signInWithPassword({
-        email:$("loginEmail").value.trim(),
-        password:$("loginPassword").value
-    });
-
-    button.disabled = false;
-    button.textContent = "SIGN IN";
-
-    if (error) {
-        message.textContent = error.message;
-        return;
-    }
-
-    await showDashboard(data.user);
+$("loginForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ $("loginMessage").textContent="Signing in...";
+ $("loginButton").disabled=true;
+ try{
+  const {data,error}=await db.auth.signInWithPassword({
+   email:$("loginEmail").value.trim(),
+   password:$("loginPassword").value
+  });
+  if(error)throw error;
+  await showApp(data.user);
+ }catch(error){
+  $("loginMessage").textContent=error.message;
+ }finally{
+  $("loginButton").disabled=false;
+ }
 });
+$("logoutBtn").onclick=async()=>{
+ await db.auth.signOut();
+ customers=[];payments=[];
+ $("app").classList.add("hidden");
+ $("loginScreen").classList.remove("hidden");
+};
 
-$("logoutButton").addEventListener("click", async () => {
-    await db.auth.signOut();
-    customers = [];
-    payments = [];
-    showLogin();
-});
+/* =========================================================
+   SUPABASE DATA
+   Expected customers columns:
+   id, name, email, phone, mt5_account, service, plan,
+   start_date, expiry_date, notes
 
-db.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_OUT") {
-        showLogin();
-    }
-});
-
-/* =========================================
-   LOAD DATABASE
-========================================= */
-
-async function loadData() {
-    $("customerTable").innerHTML =
-        '<tr><td colspan="9" class="empty">Loading...</td></tr>';
-
-    const [customerResult,paymentResult] = await Promise.all([
-        db.from("customers").select("*").order("created_at",{ascending:false}),
-        db.from("payments").select("*").order("payment_date",{ascending:false})
-    ]);
-
-    if (customerResult.error || paymentResult.error) {
-        alert(
-            "Database error: " +
-            (customerResult.error?.message || paymentResult.error?.message)
-        );
-        return;
-    }
-
-    customers = customerResult.data || [];
-    payments = paymentResult.data || [];
-
-    renderDashboard();
+   Expected payments columns:
+   id, customer_id, amount, method, reference,
+   payment_date, notes
+   ========================================================= */
+async function loadAll(){
+ try{
+  const [customerResult,paymentResult]=await Promise.all([
+   db.from("customers").select("*").order("created_at",{ascending:false}),
+   db.from("payments").select("*").order("payment_date",{ascending:false})
+  ]);
+  if(customerResult.error)throw customerResult.error;
+  if(paymentResult.error)throw paymentResult.error;
+  customers=customerResult.data||[];
+  payments=paymentResult.data||[];
+  render();
+ }catch(error){
+  alert("Could not load Supabase records: "+error.message+
+   "\n\nPlease check table names, column names and Supabase permissions.");
+ }
 }
 
-/* =========================================
-   DASHBOARD
-========================================= */
-
-function renderDashboard() {
-    const active = customers.filter(c => getStatus(c).name === "Active");
-    const expiring = customers.filter(c => getStatus(c).name === "Expiring Soon");
-    const expired = customers.filter(c => getStatus(c).name === "Expired");
-
-    const revenue = payments.reduce(
-        (sum,p) => sum + Number(p.amount),0
-    );
-
-    $("totalCustomers").textContent = customers.length;
-    $("activeCustomers").textContent = active.length;
-    $("expiringCustomers").textContent = expiring.length;
-    $("expiredCustomers").textContent = expired.length;
-    $("totalRevenue").textContent = money(revenue);
-
-    renderCustomers();
-    renderReminders();
-}
-
-function renderCustomers() {
-    const search = $("searchInput").value.toLowerCase();
-    const statusFilter = $("statusFilter").value;
-    const serviceFilter = $("serviceFilter").value;
-
-    const filtered = customers.filter(c => {
-        const status = getStatus(c).name;
-
-        const matchesSearch = [
-            c.name,c.email,c.phone,c.mt5_account,c.plan
-        ].some(v => String(v || "").toLowerCase().includes(search));
-
-        const matchesStatus =
-            statusFilter === "all" ||
-            status.toLowerCase().replace(" soon","") === statusFilter;
-
-        const matchesService =
-            serviceFilter === "all" || c.service === serviceFilter;
-
-        return matchesSearch && matchesStatus && matchesService;
-    });
-
-    if (!filtered.length) {
-        $("customerTable").innerHTML =
-            '<tr><td colspan="9" class="empty">No customers found.</td></tr>';
-        return;
-    }
-
-    $("customerTable").innerHTML = filtered.map(c => {
-        const status = getStatus(c);
-        const total = getCustomerTotal(c.id);
-
-        return `
-        <tr>
-            <td>
-                <strong>${escapeHTML(c.name)}</strong><br>
-                <span class="muted">${escapeHTML(c.email || "")}</span>
-            </td>
-            <td>${escapeHTML(c.service)}</td>
-            <td>${escapeHTML(c.plan)}</td>
-            <td>${escapeHTML(c.mt5_account || "-")}</td>
-            <td>${formatDate(c.start_date)}</td>
-            <td>${formatDate(c.expiry_date)}</td>
-            <td><span class="badge ${status.className}">${status.name}</span></td>
-            <td>${money(total)}</td>
-            <td>
-                <div class="actions">
-                    <button class="btn btn-small" onclick="editCustomer('${c.id}')">Edit</button>
-                    <button class="btn btn-small" onclick="openPayment('${c.id}')">Payment</button>
-                    <button class="btn btn-small" onclick="showHistory('${c.id}')">History</button>
-                    <button class="btn btn-small" onclick="renewCustomer('${c.id}')">Renew</button>
-                    <button class="btn btn-small btn-danger" onclick="deleteCustomer('${c.id}')">Delete</button>
-                </div>
-            </td>
-        </tr>`;
-    }).join("");
-}
-
-/* =========================================
-   EXPIRATION REMINDERS
-========================================= */
-
-function renderReminders() {
-    const list = customers
-        .filter(c => {
-            const s = getStatus(c).name;
-            return s === "Expiring Soon" || s === "Expired";
-        })
-        .sort((a,b) => a.expiry_date.localeCompare(b.expiry_date));
-
-    if (!list.length) {
-        $("reminderList").innerHTML =
-            '<div class="empty">No upcoming expiration reminders.</div>';
-        return;
-    }
-
-    $("reminderList").innerHTML = list.map(c => {
-        const status = getStatus(c);
-
-        return `
-        <div class="reminder-item">
-            <div>
-                <strong>${escapeHTML(c.name)}</strong><br>
-                <span class="muted">${escapeHTML(c.email || "No email address")} · Expires ${formatDate(c.expiry_date)}</span>
-                <br><span class="badge ${status.className}">${status.name}</span>
-            </div>
-            <button class="btn btn-small" onclick="sendReminder('${c.id}')">
-                Prepare Email
-            </button>
-        </div>`;
-    }).join("");
-}
-
-function sendReminder(id) {
-    const c = customers.find(x => x.id === id);
-    if (!c) return;
-
-    if (!c.email) {
-        alert("This customer does not have an email address.");
-        return;
-    }
-
-    const subject = "RoboShield Pro Subscription Reminder";
-
-    const body =
-`Hello ${c.name},
-
-This is a reminder that your RoboShield Pro subscription is due to expire on ${formatDate(c.expiry_date)}.
-
-Please contact us to renew your subscription and continue using the service.
-
-Thank you,
-RoboShield Pro`;
-
-    const gmailURL =
-        "https://mail.google.com/mail/?view=cm&fs=1" +
-        "&to=" + encodeURIComponent(c.email) +
-        "&su=" + encodeURIComponent(subject) +
-        "&body=" + encodeURIComponent(body);
-
-    window.open(gmailURL, "_blank");
-}
-/* =========================================
-   PLAN SELECTION AND EXPIRATION
-========================================= */
-
-function updatePlanOptions(selectedPlan) {
-    const service = $("customerService").value;
-    const options = plans[service];
-
-    $("customerPlan").innerHTML = options.map(p =>
-        `<option value="${escapeHTML(p.name)}">${escapeHTML(p.name)} - ${p.days} days (${money(p.price)})</option>`
-    ).join("");
-
-    if (selectedPlan && options.some(p => p.name === selectedPlan)) {
-        $("customerPlan").value = selectedPlan;
-    }
-
-    calculateExpiry();
-}
-
-function calculateExpiry() {
-    const service = $("customerService").value;
-    const planName = $("customerPlan").value;
-    const start = $("customerStart").value;
-
-    const plan = plans[service].find(p => p.name === planName);
-
-    if (plan && start) {
-        $("customerExpiry").value = addDays(start, plan.days);
-    }
-}
-$("customerService").addEventListener("change", () => updatePlanOptions());
-$("customerPlan").addEventListener("change", calculateExpiry);
-$("customerStart").addEventListener("change", calculateExpiry);
-
-/* =========================================
+/* =========================================================
    CUSTOMER FORM
-========================================= */
+   ========================================================= */
+function openCustomerForm(customer=null){
+ editingCustomerId=customer?.id||null;
+ $("customerModalTitle").textContent=customer?"Edit Customer":"Add Customer";
+ $("customerName").value=customer?.name||"";
+ $("customerEmail").value=customer?.email||"";
+ $("customerPhone").value=customer?.phone||"";
+ $("mt5Account").value=customer?.mt5_account||"";
+ $("service").value=customer?.service||"Account Management";
 
-function openCustomerModal() {
-    $("customerForm").reset();
-    $("customerId").value = "";
-    $("customerModalTitle").textContent = "Add Customer";
-    $("initialPayment").value = "0";
-    $("customerStart").value = todayString();
+ const savedPlan=customer?.plan||"";
+ const isTrial=savedPlan.toLowerCase().includes("trial");
+ $("subscriptionType").value=isTrial?"trial":"paid";
 
-    $("initialPaymentField").classList.remove("hidden");
-    $("paymentMethodField").classList.remove("hidden");
-    $("paymentReferenceField").classList.remove("hidden");
+ // Read the tier name from the stored plan description.
+ const tierName=Object.keys(MANAGEMENT_TIERS).find(t=>savedPlan.includes(t));
+ if(tierName)$("tier").value=tierName;
 
-    updatePlanOptions();
-    $("customerModal").classList.remove("hidden");
+ updatePlanOptions();
+
+ if(!isTrial){
+  const period=Object.keys(EA_PLANS).concat(Object.keys(MANAGEMENT_DAYS))
+   .find(p=>savedPlan.includes(p));
+  if(period&&[...$("plan").options].some(o=>o.value===period))$("plan").value=period;
+  updatePrice();
+ }else{
+  $("planPrice").value=0;
+ }
+ $("startDate").value=customer?.start_date||localISO();
+ $("expiryDate").value=customer?.expiry_date||addDays($("startDate").value,isTrial?7:getSelectedPlan().days);
+ $("amountPaid").value="0";
+ $("paymentMethod").value="";
+ $("paymentReference").value="";
+ $("notes").value=customer?.notes||"";
+ $("customerModal").classList.add("show");
 }
+function closeModal(id){$(id).classList.remove("show")}
+$("addBtn").onclick=()=>openCustomerForm();
+$("service").onchange=updatePlanOptions;
+$("subscriptionType").onchange=updatePlanOptions;
+$("tier").onchange=updatePrice;
+$("plan").onchange=updatePrice;
+$("startDate").onchange=updateExpiry;
 
-function closeModal(id) {
-    $(id).classList.add("hidden");
-}
+$("customerForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ const type=$("subscriptionType").value;
+ const service=$("service").value;
+ const tier=$("tier").value;
+ const plan=getSelectedPlan();
+ const fullPlan=fullPlanName(service,type,tier,plan.name);
+ const record={
+  name:$("customerName").value.trim(),
+  email:$("customerEmail").value.trim()||null,
+  phone:$("customerPhone").value.trim()||null,
+  mt5_account:$("mt5Account").value.trim()||null,
+  service,
+  plan:fullPlan,
+  start_date:$("startDate").value,
+  expiry_date:$("expiryDate").value,
+  notes:$("notes").value.trim()||null
+ };
+ $("saveCustomerBtn").disabled=true;
+ try{
+  let customerId=editingCustomerId;
+  if(editingCustomerId){
+   const {error}=await db.from("customers").update(record).eq("id",editingCustomerId);
+   if(error)throw error;
+  }else{
+   const {data,error}=await db.from("customers").insert(record).select().single();
+   if(error)throw error;
+   customerId=data.id;
+  }
 
-$("addCustomerButton").addEventListener("click",openCustomerModal);
-
-async function editCustomer(id) {
-    const c = customers.find(x => x.id === id);
-    if (!c) return;
-
-    $("customerForm").reset();
-    $("customerId").value = c.id;
-    $("customerModalTitle").textContent = "Edit Customer";
-
-    $("customerName").value = c.name || "";
-    $("customerEmail").value = c.email || "";
-    $("customerPhone").value = c.phone || "";
-    $("customerMT5").value = c.mt5_account || "";
-    $("customerService").value = c.service;
-
-    updatePlanOptions(c.plan);
-
-    $("customerStart").value = c.start_date;
-    $("customerExpiry").value = c.expiry_date;
-    $("customerNotes").value = c.notes || "";
-
-    $("initialPaymentField").classList.add("hidden");
-    $("paymentMethodField").classList.add("hidden");
-    $("paymentReferenceField").classList.add("hidden");
-
-    $("customerModal").classList.remove("hidden");
-}
-
-$("customerForm").addEventListener("submit",async event => {
-    event.preventDefault();
-
-    const button = $("saveCustomerButton");
-    button.disabled = true;
-    button.textContent = "SAVING...";
-
-    const id = $("customerId").value;
-
-    const record = {
-        name:$("customerName").value.trim(),
-        email:$("customerEmail").value.trim() || null,
-        phone:$("customerPhone").value.trim() || null,
-        mt5_account:$("customerMT5").value.trim() || null,
-        service:$("customerService").value,
-        plan:$("customerPlan").value,
-        start_date:$("customerStart").value,
-        expiry_date:$("customerExpiry").value,
-        notes:$("customerNotes").value.trim() || null
-    };
-
-    let result;
-
-    if (id) {
-        result = await db.from("customers").update(record).eq("id",id);
-    } else {
-        result = await db.from("customers").insert(record).select().single();
-    }
-
-    if (result.error) {
-        alert("Could not save customer: " + result.error.message);
-        button.disabled = false;
-        button.textContent = "Save Customer";
-        return;
-    }
-
-    if (!id) {
-        const newCustomer = result.data;
-        const amount = Number($("initialPayment").value || 0);
-
-        if (amount > 0) {
-            const paymentResult = await db.from("payments").insert({
-                customer_id:newCustomer.id,
-                amount:amount,
-                method:$("initialPaymentMethod").value,
-                reference:$("initialPaymentReference").value.trim() || null,
-                payment_date:todayString()
-            });
-
-            if (paymentResult.error) {
-                alert("Customer saved, but the initial payment was not saved: " + paymentResult.error.message);
-            }
-        }
-    }
-
-    button.disabled = false;
-    button.textContent = "Save Customer";
-
-    closeModal("customerModal");
-    await loadData();
+  const amount=Number($("amountPaid").value||0);
+  if(amount>0){
+   const payment={
+    customer_id:customerId,
+    amount,
+    method:$("paymentMethod").value||null,
+    reference:$("paymentReference").value.trim()||null,
+    payment_date:localISO(),
+    notes:"Payment recorded when subscription was saved"
+   };
+   const {error}=await db.from("payments").insert(payment);
+   if(error)throw error;
+  }
+  closeModal("customerModal");
+  await loadAll();
+ }catch(error){
+  alert("Could not save customer: "+error.message);
+ }finally{
+  $("saveCustomerBtn").disabled=false;
+ }
 });
 
-async function deleteCustomer(id) {
-    const c = customers.find(x => x.id === id);
-    if (!c) return;
+/* =========================================================
+   CUSTOMER TABLE / DASHBOARD
+   ========================================================= */
+function render(){
+ const q=$("search").value.toLowerCase().trim();
+ const statusFilter=$("statusFilter").value;
+ const serviceFilter=$("serviceFilter").value;
+ const list=customers.filter(c=>{
+  const status=statusOf(c);
+  return (statusFilter==="all"||status===statusFilter)&&
+   (serviceFilter==="all"||c.service===serviceFilter)&&
+   [c.name,c.email,c.mt5_account,c.service,c.plan].join(" ").toLowerCase().includes(q);
+ }).sort((a,b)=>(a.expiry_date||"9999").localeCompare(b.expiry_date||"9999"));
 
-    if (!confirm("Delete " + c.name + " and all associated payment records?")) {
-        return;
-    }
+ $("totalCount").textContent=customers.length;
+ $("activeCount").textContent=customers.filter(c=>statusOf(c)==="active").length;
+ $("soonCount").textContent=customers.filter(c=>statusOf(c)==="soon").length;
+ $("expiredCount").textContent=customers.filter(c=>statusOf(c)==="expired").length;
+ const revenue=payments.reduce((sum,p)=>sum+Number(p.amount||0),0);
+ $("revenueTotal").textContent=money(revenue);
+ $("recordCount").textContent=list.length+" records";
+ $("emptyState").classList.toggle("hidden",list.length>0);
 
-    const {error} = await db.from("customers").delete().eq("id",id);
-
-    if (error) {
-        alert(error.message);
-        return;
-    }
-
-    await loadData();
+ $("customerRows").innerHTML=list.map(c=>{
+  const status=statusOf(c),left=daysRemaining(c.expiry_date);
+  const label=status==="expired"?"Expired":status==="soon"?"Expiring Soon":status==="active"?"Active":"Unknown";
+  const remaining=left===null?"—":left<0?Math.abs(left)+" days overdue":left===0?"Expires today":left+" days";
+  const trial=String(c.plan||"").toLowerCase().includes("trial");
+  return `<tr>
+   <td><div class="customer">${escapeHTML(c.name)}</div><div class="sub">${escapeHTML(c.email||"No email")} ${c.phone?"• "+escapeHTML(c.phone):""}</div></td>
+   <td>${escapeHTML(c.mt5_account||"—")}</td>
+   <td>${escapeHTML(c.service||"—")}</td>
+   <td>${escapeHTML(c.plan||"—")} ${trial?'<span class="pill trial">TRIAL</span>':""}</td>
+   <td>${dateText(c.start_date)}</td>
+   <td>${dateText(c.expiry_date)}</td>
+   <td>${remaining}</td>
+   <td><span class="pill ${status}">${label}</span></td>
+   <td><div class="actions">
+    <button class="secondary small" data-edit="${escapeHTML(c.id)}">Edit</button>
+    <button class="secondary small" data-renew="${escapeHTML(c.id)}">Renew</button>
+    <button class="danger small" data-delete="${escapeHTML(c.id)}">Delete</button>
+   </div></td>
+  </tr>`;
+ }).join("");
 }
+$("search").oninput=render;
+$("statusFilter").onchange=render;
+$("serviceFilter").onchange=render;
 
-/* =========================================
-   RENEW SUBSCRIPTION
-========================================= */
-
-async function renewCustomer(id) {
-    const c = customers.find(x => x.id === id);
-    if (!c) return;
-
-    const availablePlans = plans[c.service];
-
-    const choice = prompt(
-        "Choose a plan by number:\n" +
-        availablePlans.map((p,i) =>
-            `${i+1}. ${p.name} - ${p.days} days - ${money(p.price)}`
-        ).join("\n")
-    );
-
-    if (choice === null) return;
-
-    const index = Number(choice) - 1;
-    const selected = availablePlans[index];
-
-    if (!selected) {
-        alert("Invalid plan selection.");
-        return;
-    }
-
-    const today = todayString();
-    const newStart = c.expiry_date >= today ? c.expiry_date : today;
-    const newExpiry = addDays(newStart,selected.days);
-
-    if (!confirm(
-        `Renew ${c.name}?\n\nPlan: ${selected.name}\nNew expiration: ${formatDate(newExpiry)}`
-    )) return;
-
-    const {error} = await db.from("customers").update({
-        plan:selected.name,
-        start_date:newStart,
-        expiry_date:newExpiry
-    }).eq("id",id);
-
-    if (error) {
-        alert(error.message);
-        return;
-    }
-
-    await loadData();
-}
-
-/* =========================================
-   PAYMENTS
-========================================= */
-
-function openPayment(id) {
-    const c = customers.find(x => x.id === id);
-    if (!c) return;
-
-    $("paymentForm").reset();
-    $("paymentCustomerId").value = id;
-    $("paymentCustomerName").textContent = c.name;
-    $("paymentDate").value = todayString();
-    $("paymentModal").classList.remove("hidden");
-}
-
-$("paymentForm").addEventListener("submit",async event => {
-    event.preventDefault();
-
-    const record = {
-        customer_id:$("paymentCustomerId").value,
-        amount:Number($("paymentAmount").value),
-        method:$("paymentMethod").value,
-        reference:$("paymentReference").value.trim() || null,
-        payment_date:$("paymentDate").value,
-        notes:$("paymentNotes").value.trim() || null
-    };
-
-    if (!record.amount || record.amount <= 0) {
-        alert("Enter a valid payment amount.");
-        return;
-    }
-
-    const {error} = await db.from("payments").insert(record);
-
-    if (error) {
-        alert("Payment error: " + error.message);
-        return;
-    }
-
-    closeModal("paymentModal");
-    await loadData();
+$("customerRows").addEventListener("click",async event=>{
+ const b=event.target.closest("button");if(!b)return;
+ const id=b.dataset.edit||b.dataset.renew||b.dataset.delete;
+ const customer=customers.find(c=>String(c.id)===String(id));if(!customer)return;
+ if(b.dataset.edit){openCustomerForm(customer);return}
+ if(b.dataset.renew){
+  const oldExpiry=customer.expiry_date;
+  const start=oldExpiry&&oldExpiry>=localISO()?oldExpiry:localISO();
+  const trial=String(customer.plan||"").toLowerCase().includes("trial");
+  let days=30;
+  const period=Object.keys(EA_PLANS).concat(Object.keys(MANAGEMENT_DAYS))
+   .find(p=>String(customer.plan||"").includes(p));
+  if(trial)days=7;
+  else if(customer.service==="Expert Advisor")days=EA_PLANS[period]?.days||30;
+  else days=MANAGEMENT_DAYS[period]||30;
+  const {error}=await db.from("customers").update({
+   start_date:start,expiry_date:addDays(start,days)
+  }).eq("id",customer.id);
+  if(error)alert(error.message);else await loadAll();
+  return;
+ }
+ if(b.dataset.delete&&confirm("Delete this customer subscription?")){
+  const {error}=await db.from("customers").delete().eq("id",customer.id);
+  if(error)alert("Delete failed: "+error.message);else await loadAll();
+ }
 });
 
-function showHistory(id) {
-    const c = customers.find(x => x.id === id);
-    if (!c) return;
-
-    $("historyCustomerName").textContent =
-        c.name + " · Total paid: " + money(getCustomerTotal(id));
-
-    const records = getCustomerPayments(id);
-
-    if (!records.length) {
-        $("paymentHistoryTable").innerHTML =
-            '<tr><td colspan="5" class="empty">No payment records.</td></tr>';
-    } else {
-        $("paymentHistoryTable").innerHTML = records.map(p => `
-            <tr>
-                <td>${formatDate(p.payment_date)}</td>
-                <td>${money(p.amount)}</td>
-                <td>${escapeHTML(p.method)}</td>
-                <td>${escapeHTML(p.reference || "-")}</td>
-                <td>
-                    <button class="btn btn-small btn-danger"
-                    onclick="deletePayment('${p.id}')">Delete</button>
-                </td>
-            </tr>
-        `).join("");
-    }
-
-    $("historyModal").classList.remove("hidden");
+/* =========================================================
+   PAYMENT HISTORY
+   ========================================================= */
+function populatePaymentCustomers(){
+ $("paymentCustomer").innerHTML=customers.map(c=>
+  `<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)} — ${escapeHTML(c.mt5_account||"No MT5")}</option>`
+ ).join("");
 }
-
-async function deletePayment(id) {
-    if (!confirm("Delete this payment record?")) return;
-
-    const {error} = await db.from("payments").delete().eq("id",id);
-
-    if (error) {
-        alert(error.message);
-        return;
-    }
-
-    await loadData();
-
-    const customerId = payments.find(p => p.id === id)?.customer_id;
-
-    if (customerId) {
-        showHistory(customerId);
-    } else {
-        closeModal("historyModal");
-    }
+function renderPayments(){
+ const list=[...payments].sort((a,b)=>(b.payment_date||"").localeCompare(a.payment_date||""));
+ $("paymentList").innerHTML=list.length?list.map(p=>{
+  const customer=customers.find(c=>String(c.id)===String(p.customer_id));
+  return `<div class="payment-item">
+   <div><strong>${escapeHTML(customer?.name||"Customer record")}</strong>
+   <div class="muted">${dateText(p.payment_date)} • ${escapeHTML(p.method||"Unspecified")} • ${escapeHTML(p.reference||"No reference")}</div>
+   <div class="muted">${escapeHTML(p.notes||"")}</div></div>
+   <div><strong class="green">${money(p.amount)}</strong>
+   <button class="danger small" data-payment-delete="${escapeHTML(p.id)}">Delete</button></div>
+  </div>`;
+ }).join(""):'<div class="empty">No payments recorded yet.</div>';
 }
+$("paymentsBtn").onclick=()=>{
+ populatePaymentCustomers();renderPayments();
+ $("paymentDate").value=localISO();
+ $("paymentsModal").classList.add("show");
+};
+$("paymentForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ const payment={
+  customer_id:$("paymentCustomer").value,
+  amount:Number($("paymentAmount").value),
+  method:$("paymentMethod").value,
+  reference:$("paymentRef").value.trim()||null,
+  payment_date:$("paymentDate").value,
+  notes:$("paymentNotes").value.trim()||null
+ };
+ try{
+  const {error}=await db.from("payments").insert(payment);
+  if(error)throw error;
+  $("paymentForm").reset();
+  $("paymentDate").value=localISO();
+  await loadAll();renderPayments();populatePaymentCustomers();
+ }catch(error){alert("Payment could not be saved: "+error.message)}
+});
+$("paymentList").addEventListener("click",async event=>{
+ const b=event.target.closest("[data-payment-delete]");if(!b)return;
+ if(!confirm("Delete this payment record?"))return;
+ const {error}=await db.from("payments").delete().eq("id",b.dataset.paymentDelete);
+ if(error)alert(error.message);
+ else{await loadAll();renderPayments()}
+});
 
-/* =========================================
+/* =========================================================
+   REMINDER EMAILS
+   ========================================================= */
+function reminderText(c,days){
+ const when=days===0?"expires today":`expires in ${days} day${days===1?"":"s"}`;
+ return `Hello ${c.name},\n\nThis is a reminder that your RoboShield Pro ${c.service} subscription (${c.plan}) ${when}, on ${dateText(c.expiry_date)}.\n\nPlease contact us if you wish to continue your subscription. Your trial will not automatically convert into a paid subscription.\n\nThank you,\nROBOSHIELD PRO`;
+}
+$("remindersBtn").onclick=()=>{
+ const due=customers.filter(c=>c.email&&[7,3,1,0].includes(daysRemaining(c.expiry_date)));
+ $("reminderList").innerHTML=due.length?due.map(c=>{
+  const days=daysRemaining(c.expiry_date);
+  return `<div class="payment-item"><div><strong>${escapeHTML(c.name)}</strong>
+   <div class="muted">${escapeHTML(c.email)} • ${days===0?"Expires today":days+" days left"}</div>
+   <div class="muted">${escapeHTML(c.plan||"")}</div></div>
+   <button class="primary small" data-email="${escapeHTML(c.id)}">Prepare Email</button></div>`;
+ }).join(""):'<div class="empty">No reminders due today. Reminders are shown 7, 3, 1 and 0 days before expiration.</div>';
+ $("remindersModal").classList.add("show");
+};
+$("reminderList").addEventListener("click",event=>{
+ const b=event.target.closest("[data-email]");if(!b)return;
+ const c=customers.find(x=>String(x.id)===String(b.dataset.email));if(!c)return;
+ const subject=`RoboShield Pro Subscription Reminder - ${c.name}`;
+ const body=reminderText(c,daysRemaining(c.expiry_date));
+ location.href=`mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+});
+
+/* =========================================================
    CSV EXPORT
-========================================= */
+   ========================================================= */
+$("exportBtn").onclick=()=>{
+ if(!customers.length){alert("No customer records to export.");return}
+ const cols=["name","email","phone","mt5_account","service","plan","start_date","expiry_date","notes"];
+ const csv=[cols.join(","),...customers.map(c=>cols.map(k=>
+  '"'+String(c[k]??"").replace(/"/g,'""')+'"'
+ ).join(","))].join("\r\n");
+ const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");a.href=url;a.download="roboshield-customers.csv";a.click();
+ URL.revokeObjectURL(url);
+};
 
-$("exportButton").addEventListener("click",() => {
-    const headers = [
-        "Name","Email","Phone","MT5 Account","Service","Plan",
-        "Start Date","Expiration Date","Status","Total Paid USD"
-    ];
-
-    const rows = customers.map(c => [
-        c.name,
-        c.email,
-        c.phone,
-        c.mt5_account,
-        c.service,
-        c.plan,
-        c.start_date,
-        c.expiry_date,
-        getStatus(c).name,
-        getCustomerTotal(c.id).toFixed(2)
-    ]);
-
-    const csv = [headers,...rows].map(row =>
-        row.map(value =>
-            '"' + String(value ?? "").replace(/"/g,'""') + '"'
-        ).join(",")
-    ).join("\n");
-
-    const blob = new Blob(["\uFEFF" + csv],{
-        type:"text/csv;charset=utf-8;"
-    });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-
-    a.href = url;
-    a.download = "RoboShield-Pro-Customers.csv";
-    a.click();
-
-    URL.revokeObjectURL(url);
+/* =========================================================
+   MODAL CONTROLS / STARTUP
+   ========================================================= */
+document.querySelectorAll("[data-close]").forEach(button=>{
+ button.addEventListener("click",()=>closeModal(button.dataset.close));
+});
+document.querySelectorAll(".modalback").forEach(backdrop=>{
+ backdrop.addEventListener("click",event=>{
+  if(event.target===backdrop)backdrop.classList.remove("show");
+ });
 });
 
-/* =========================================
-   SEARCH AND FILTERS
-========================================= */
+(async()=>{
+ try{
+   if (!window.supabase || typeof window.supabase.createClient !== "function") {
+     $("loginMessage").textContent = "Supabase library failed to load. Please refresh the page.";
+     return;
+   }
 
-$("searchInput").addEventListener("input",renderCustomers);
-$("statusFilter").addEventListener("change",renderCustomers);
-$("serviceFilter").addEventListener("change",renderCustomers);
+   await checkSession();
 
-/* =========================================
-   MODAL CLOSE BUTTONS
-========================================= */
-
-document.querySelectorAll("[data-close]").forEach(button => {
-    button.addEventListener("click",() => {
-        closeModal(button.dataset.close);
-    });
-});
-
-document.querySelectorAll(".modal").forEach(modal => {
-    modal.addEventListener("click",event => {
-        if (event.target === modal) {
-            modal.classList.add("hidden");
-        }
-    });
-});
-
-/* =========================================
-   START APPLICATION
-========================================= */
-
-checkSession();
+  }catch(error){
+   $("loginMessage").textContent = "Supabase connection error: " + error.message;
+   console.error("Startup error:", error);
+ }
+})();
 </script>
-
 </body>
 </html>
